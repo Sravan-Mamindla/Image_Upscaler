@@ -4,7 +4,7 @@ from PySide6.QtCore import QThread, Slot
 from processor import UpscaleWorker
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
-    QLabel, QPushButton, QFileDialog, QProgressBar
+    QLabel, QPushButton, QFileDialog, QProgressBar, QComboBox  # Add QComboBox
 )
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import Qt, QSize
@@ -32,6 +32,16 @@ class MainWindow(QMainWindow):
         control_layout = QHBoxLayout()
         self.open_button = QPushButton("Open Image")
         self.open_button.clicked.connect(self.open_image)
+
+        # Model selection dropdown
+        self.model_combo = QComboBox()
+        self.model_combo.addItems([
+            "realesrgan-x4plus-anime",
+            "realesrgan-x4plus",
+            # Add more models here if needed
+        ])
+        control_layout.addWidget(self.model_combo)
+
         self.upscale_button = QPushButton("Upscale")
         self.upscale_button.setEnabled(False)
         control_layout.addWidget(self.open_button)
@@ -105,7 +115,9 @@ class MainWindow(QMainWindow):
     def start_upscaling(self):
         if not self.input_path:
             return
-            
+
+        selected_model = self.model_combo.currentText()  # Get selected model
+
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
         self.upscale_button.setEnabled(False)
@@ -125,7 +137,7 @@ class MainWindow(QMainWindow):
         self.worker_thread.started.connect(
             lambda: self.worker.run(
                 input_path=self.input_path,
-                model_name="realesrgan-x4plus-anime",
+                model_name=selected_model,  # Use selected model
                 temp_dir=self.temp_dir
             )
         )
